@@ -1,0 +1,6 @@
+slack_bolt
+google-auth
+gspread
+firebase-admin
+llama-cpp-python
+pytest
