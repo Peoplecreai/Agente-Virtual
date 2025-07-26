@@ -1,135 +1,114 @@
 # Creai TravelBot – Agente Virtual de Viajes (Slack + Gemini)
 
-Agente virtual para solicitudes de viaje de negocio en Creai, operando por mensajes directos en Slack y desplegado en Google Cloud Run. Procesa eventos de Slack por webhook HTTP en el puerto 8080, integra la IA conversacional de Gemini usando el SDK oficial, y almacena información en Google Sheets y Firebase.
+Creai TravelBot es un asistente para gestionar solicitudes de viaje corporativo mediante mensajes directos en Slack.  El backend está escrito en Python y se ejecuta en Google Cloud Run.  Todas las interacciones se reciben a través de la API de eventos de Slack y las respuestas se generan con la API Gemini de Google.
 
 ---
 
 ## Características principales
 
-- Conversación fluida y natural por DM en Slack.
-- Recepción de eventos **solo por HTTP POST** en el endpoint público `/slack/events` (no sockets, no RTM).
-- Backend en Python, preparado para Google Cloud Run.
-- Motor IA principal: Gemini (`google-genai`). Fallback automático a agentes open source si Gemini falla.
-- Gestión de usuarios y políticas desde Google Sheets. Datos sensibles y preferencias en Firebase.
-- Validación, logs y QA robustos.
-- Todos los precios y políticas en USD.
+- Conversación natural por DM en Slack.
+- **Eventos recibidos únicamente por HTTP POST** en `/slack/events`.
+- IA principal: Gemini (`google-generativeai`) con fallback a modelos open source.
+- Configuración de usuarios en Google Sheets y almacenamiento seguro en Firebase.
+- Validación de firmas de Slack y registro detallado de errores.
 
 ---
 
-## Quickstart
+## Instalación rápida
 
-### 1. Clona el repositorio
+### 1. Clonar el repositorio
 
 ```bash
 git clone https://github.com/tu-org/creai-travelbot.git
 cd creai-travelbot
-2. Instala dependencias
-bash
-Copiar
-Editar
+```
+
+### 2. Crear entorno y dependencias
+
+```bash
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-requirements.txt debe incluir al menos:
+```
 
-bash
-Copiar
-Editar
-google-genai
-Flask
-firebase-admin
-gspread
-oauth2client
-requests
-python-dotenv
-# y cualquier otra librería auxiliar (ej. para validar firma Slack)
-3. Configura variables de entorno
-El bot requiere las siguientes variables de entorno (puedes usar .env):
+`requirements.txt` incluye, entre otras:
 
-env
-Copiar
-Editar
-GEMINI_API_KEY=tu_api_key_de_gemini
-SLACK_SIGNING_SECRET=tu_signing_secret_de_slack
-SLACK_BOT_TOKEN=tu_bot_token_de_slack
-GOOGLE_APPLICATION_CREDENTIALS=path/al/archivo/service_account.json
-FIREBASE_CREDENTIALS=path/al/archivo/firebase_credentials.json
-4. Configuración de Slack
-Crea una app en Slack (si no existe).
+- `Flask`
+- `slack_bolt`
+- `google-generativeai`
+- `firebase-admin`
+- `gspread`
 
-Activa Event Subscriptions:
+### 3. Variables de entorno
 
-URL de Request:
+Configura un archivo `.env` (o exporta en tu entorno) con:
 
-arduino
-Copiar
-Editar
-https://travelbot-slack-uxcqgkjcna-uc.a.run.app/slack/events
-Asegúrate de que la app tenga permisos para:
+```bash
+GEMINI_API_KEY=<tu_api_key>
+SLACK_SIGNING_SECRET=<tu_signing_secret>
+SLACK_BOT_TOKEN=<tu_bot_token>
+GOOGLE_SERVICE_ACCOUNT=<ruta/al/service_account.json>
+GOOGLE_SHEET_ID=<id_de_tu_hoja>
+```
 
-Leer mensajes en DMs (im:history)
+### 4. Configuración de Slack
 
-Enviar mensajes (chat:write)
+1. Crea una aplicación en [Slack API](https://api.slack.com/apps) si aún no existe.
+2. Activa **Event Subscriptions** y define la _Request URL_ a
+   `https://<tu-dominio>/slack/events`.
+3. Otorga a la app los permisos `im:history`, `chat:write` y `users:read`.
+4. Copia el **Bot User OAuth Token** y el **Signing Secret** en las variables de entorno anteriores.
+5. Sigue la [guía oficial de Slack Events API](https://api.slack.com/apis/connections/events-api)
+   para verificar `X-Slack-Signature` y `X-Slack-Request-Timestamp` en cada
+   solicitud.
 
-Leer usuarios (users:read)
+### 5. Uso de la API Gemini
 
-Usa el token y el signing secret correctos en las variables de entorno.
+El bot emplea el paquete `google-generativeai` siguiendo la guía oficial de
+[Google AI Studio](https://ai.google.dev/docs).  Para inicializar el cliente:
 
-5. Deploy en Google Cloud Run
-Empaqueta la app (Dockerfile recomendado) y despliega en Google Cloud Run.
+```python
+from google import generativeai as genai
+genai.configure(api_key=os.environ["GEMINI_API_KEY"])
+model = genai.GenerativeModel("gemini-pro")
+```
 
-Expón el servicio en el puerto 8080.
+Todas las llamadas deben realizarse tal cual lo especifica la documentación,
+utilizando `generate_content` para enviar el texto del usuario y obteniendo la
+respuesta en `response.text`.
 
-Verifica que el endpoint /slack/events es accesible públicamente.
+### 6. Ejecución local
 
-6. Uso de Gemini
-El bot usa la librería google-genai.
+```bash
+flask run --host 0.0.0.0 --port 8080
+```
 
-Sigue siempre la guía oficial para instanciar el cliente y realizar inferencia.
+Slack enviará los eventos a `http://localhost:8080/slack/events` si usas una
+herramienta de túnel como `ngrok`.
 
-No uses librerías legacy ni métodos obsoletos.
+### 7. Despliegue en Cloud Run
 
-El API key de Gemini debe estar en la variable de entorno GEMINI_API_KEY.
+1. Crea una imagen con tu herramienta de contenedores favorita.
+2. Despliega en Google Cloud Run exponiendo el puerto `8080`.
+3. Asegúrate de que el endpoint `/slack/events` sea público.
 
-7. Seguridad y QA
-Toda petición de Slack debe validar firma (X-Slack-Signature, X-Slack-Request-Timestamp).
+### 8. Pruebas
 
-Los datos sensibles van cifrados en Firebase.
+Ejecuta los tests con:
 
-Todos los logs críticos (errores, caídas de servicio, fallos de Gemini, etc.) deben alertar al equipo técnico.
+```bash
+pytest
+```
 
-El bot nunca responde en canales, solo en DMs, y jamás expone datos sensibles fuera del contexto privado.
+---
 
-Troubleshooting
-Si el bot no responde en Slack:
+## Recursos adicionales
 
-Revisa los logs del endpoint en Google Cloud Run.
+- [Documentación oficial de Slack Events API](https://api.slack.com/apis/connections/events-api)
+- [Guía de `google-generativeai`](https://ai.google.dev/docs)
+- [Firebase Admin Python SDK](https://firebase.google.com/docs/admin/setup)
+- [Google Cloud Run](https://cloud.google.com/run)
 
-Valida la configuración del webhook y firma de Slack.
+## Licencia
 
-Asegúrate de que el puerto es 8080 y la ruta es /slack/events.
-
-Confirma que GEMINI_API_KEY y credenciales de Google están bien configuradas.
-
-Si Gemini da error o timeout:
-
-El bot intentará fallback automático a un motor open source.
-
-Si todo falla, el usuario será notificado y el error será logueado.
-
-Recursos útiles
-Guía oficial Gemini (Python)
-
-Documentación Gemini
-
-API Slack Events
-
-Google Cloud Run
-
-Firebase Admin Python SDK
-
-License
-MIT (o la que corresponda a tu proyecto)
-
-Copiar
-Editar
+MIT
