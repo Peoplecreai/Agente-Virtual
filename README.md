@@ -4,6 +4,57 @@ Conéctate a Google Sheets (para consultar usuarios y políticas), Firebase (par
 
 No uses la API de Okibi ni ninguna solución de pago para IA conversacional. Prioriza siempre servicios gratuitos, open source o económicos.
 
+## Instalación y configuración
+
+1. Instala las dependencias de Python:
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+2. Define las siguientes variables de entorno para ejecutar el bot:
+
+   - `SLACK_BOT_TOKEN` y `SLACK_SIGNING_SECRET`: credenciales de tu aplicación Slack.
+   - `GEMINI_API_KEY`: API key para la librería oficial `google-genai`.
+   - `GOOGLE_SHEET_ID`: ID de la hoja de Google Sheets que contiene la información de usuarios.
+   - `GOOGLE_SERVICE_ACCOUNT`: ruta al JSON del servicio de Google para acceder a Sheets y Firebase.
+   - `LLAMA_MODEL_PATH` (opcional): modelo local a usar si Gemini falla.
+
+3. Ejecuta la aplicación de desarrollo:
+
+   ```bash
+   python app.py
+   ```
+
+   El servidor se inicia en `http://0.0.0.0:8080`.
+
+## Endpoint de Slack
+
+El bot recibe todos los eventos de Slack vía HTTP POST en la ruta:
+
+```
+https://travelbot-slack-uxcqgkjcna-uc.a.run.app/slack/events
+```
+
+Registra esta URL en Slack (Event Subscriptions > Request URL). La firma se valida automáticamente usando los encabezados `X-Slack-Signature` y `X-Slack-Request-Timestamp` según la [documentación oficial](https://api.slack.com/authentication/verifying-requests-from-slack).
+
+## Uso de Gemini
+
+El código sigue la guía oficial de [google-genai](https://github.com/googleapis/python-genai) para generar contenido:
+
+```python
+from google import genai
+
+client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+response = client.models.generate_content(
+    model="gemini-2.5-flash",
+    contents="mensaje del usuario aquí",
+)
+texto = response.text
+```
+
+Si Gemini no está disponible, se usa un modelo open source (por ejemplo, Llama) como respaldo automático.
+
 Requisitos funcionales y reglas
 Conversación natural: El bot debe interpretar y responder mensajes en lenguaje libre (“hola”, “viajo a Madrid”, “voy de CDMX a NYC del 12 al 16”). Extrae todos los datos relevantes, confirma, pide lo que falta y nunca fuerza formatos rígidos.
 
