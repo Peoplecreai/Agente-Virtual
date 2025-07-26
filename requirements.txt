@@ -1,0 +1,8 @@
+Flask
+slack_bolt
+google-genai
+google-auth
+gspread
+firebase-admin
+llama-cpp-python
+pytest
