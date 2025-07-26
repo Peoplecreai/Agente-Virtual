@@ -1,4 +1,5 @@
 import logging
+
 import os
 
 try:
@@ -9,10 +10,15 @@ try:
         GEMINI_AVAILABLE = True
     else:
         GEMINI_AVAILABLE = False
+
+try:
+    from google.generativeai import GenerativeModel
+    GEMINI_AVAILABLE = True
 except Exception as e:
     logging.warning("Gemini not available: %s", e)
     GEMINI_AVAILABLE = False
 
+# Placeholder for fallback open-source model (e.g., llama-cpp-python)
 try:
     from llama_cpp import Llama
     LLAMA_AVAILABLE = True
@@ -23,6 +29,7 @@ except Exception as e:
 logger = logging.getLogger(__name__)
 
 
+
 class ConversationalAI:
     def __init__(self):
         self.client = genai.Client() if GEMINI_AVAILABLE else None
@@ -30,6 +37,21 @@ class ConversationalAI:
         if not self.client and LLAMA_AVAILABLE and os.environ.get("LLAMA_MODEL_PATH"):
             try:
                 self.llama_model = Llama(model_path=os.environ["LLAMA_MODEL_PATH"])
+
+class ConversationalAI:
+    def __init__(self):
+        self.gemini_model = None
+        if GEMINI_AVAILABLE:
+            try:
+                self.gemini_model = GenerativeModel("gemini-pro")
+                logger.info("Using Gemini model")
+            except Exception as e:
+                logger.error("Failed to init Gemini: %s", e)
+                self.gemini_model = None
+        self.llama_model = None
+        if not self.gemini_model and LLAMA_AVAILABLE:
+            try:
+                self.llama_model = Llama(model_path="model.bin")
                 logger.info("Using Llama fallback model")
             except Exception as e:
                 logger.error("Failed to load Llama: %s", e)
@@ -46,6 +68,13 @@ class ConversationalAI:
             except Exception as e:
                 logger.error("Gemini error: %s", e)
                 self.client = None
+        if self.gemini_model:
+            try:
+                response = self.gemini_model.generate_content(text)
+                return response.text
+            except Exception as e:
+                logger.error("Gemini error: %s", e)
+                self.gemini_model = None
         if self.llama_model:
             try:
                 output = self.llama_model(text)

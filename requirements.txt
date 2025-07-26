@@ -1,6 +1,8 @@
+
 Flask
 slack_bolt
 google-genai
+slack_bolt
 google-auth
 gspread
 firebase-admin

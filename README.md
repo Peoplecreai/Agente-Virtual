@@ -1,144 +1,135 @@
-Contexto general
-Desarrolla desde cero, en Python, un agente virtual para solicitudes de viajes de negocio en Creai, que opera únicamente vía mensajes directos (DM) en Slack. El backend se despliega en Google Cloud.
-Conéctate a Google Sheets (para consultar usuarios y políticas), Firebase (para guardar datos personales, preferencias y memoria conversacional), Gemini (como primer motor IA, y si no cumple, reemplaza automáticamente por un agente conversacional open source tipo Llama, Mistral, Rasa, u otro equivalente). Usa SerpAPI para búsquedas de direcciones o venues, y cualquier otro servicio gratuito o open source necesario.
+# Creai TravelBot – Agente Virtual de Viajes (Slack + Gemini)
 
-No uses la API de Okibi ni ninguna solución de pago para IA conversacional. Prioriza siempre servicios gratuitos, open source o económicos.
+Agente virtual para solicitudes de viaje de negocio en Creai, operando por mensajes directos en Slack y desplegado en Google Cloud Run. Procesa eventos de Slack por webhook HTTP en el puerto 8080, integra la IA conversacional de Gemini usando el SDK oficial, y almacena información en Google Sheets y Firebase.
 
-Requisitos funcionales y reglas
-Conversación natural: El bot debe interpretar y responder mensajes en lenguaje libre (“hola”, “viajo a Madrid”, “voy de CDMX a NYC del 12 al 16”). Extrae todos los datos relevantes, confirma, pide lo que falta y nunca fuerza formatos rígidos.
+---
 
-Identificación automática: Obtén Slack ID y cruza en Google Sheets para nombre, fecha de nacimiento, seniority (L-0 a L-10, L7+ es C-level), email y cualquier otro dato disponible. Si algo falta, solicítalo al usuario y guárdalo en Firebase.
+## Características principales
 
-Datos sensibles: El número de pasaporte y visa solo se pide cuando hace falta (por destino); se almacena cifrado en Firebase y solo se confirma en viajes futuros (permitiendo actualización).
+- Conversación fluida y natural por DM en Slack.
+- Recepción de eventos **solo por HTTP POST** en el endpoint público `/slack/events` (no sockets, no RTM).
+- Backend en Python, preparado para Google Cloud Run.
+- Motor IA principal: Gemini (`google-genai`). Fallback automático a agentes open source si Gemini falla.
+- Gestión de usuarios y políticas desde Google Sheets. Datos sensibles y preferencias en Firebase.
+- Validación, logs y QA robustos.
+- Todos los precios y políticas en USD.
 
-Política de viajes:
+---
 
-Vuelos: clase económica, equipaje de mano incluido.
+## Quickstart
 
-Hospedaje: solo hoteles en zona segura y cerca del venue; tarifas máximas por seniority y región (en USD):
+### 1. Clona el repositorio
 
-C-Level: México $150, EUA/Canadá $200, Latam $180, Europa $250
+```bash
+git clone https://github.com/tu-org/creai-travelbot.git
+cd creai-travelbot
+2. Instala dependencias
+bash
+Copiar
+Editar
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+requirements.txt debe incluir al menos:
 
-General: México $75, EUA/Canadá $150, Latam $120, Europa $180
+bash
+Copiar
+Editar
+google-genai
+Flask
+firebase-admin
+gspread
+oauth2client
+requests
+python-dotenv
+# y cualquier otra librería auxiliar (ej. para validar firma Slack)
+3. Configura variables de entorno
+El bot requiere las siguientes variables de entorno (puedes usar .env):
 
-Viáticos diarios (USD): México/Latam $50, EUA/Canadá $120, Europa $100.
+env
+Copiar
+Editar
+GEMINI_API_KEY=tu_api_key_de_gemini
+SLACK_SIGNING_SECRET=tu_signing_secret_de_slack
+SLACK_BOT_TOKEN=tu_bot_token_de_slack
+GOOGLE_APPLICATION_CREDENTIALS=path/al/archivo/service_account.json
+FIREBASE_CREDENTIALS=path/al/archivo/firebase_credentials.json
+4. Configuración de Slack
+Crea una app en Slack (si no existe).
 
-Hospedaje compartido solo como opción, nunca impuesto.
+Activa Event Subscriptions:
 
-Cualquier excepción a políticas (presupuesto, clase, zona) se escala a Finanzas/Presidencia y se informa al usuario.
+URL de Request:
 
-Extracción y validación:
+arduino
+Copiar
+Editar
+https://travelbot-slack-uxcqgkjcna-uc.a.run.app/slack/events
+Asegúrate de que la app tenga permisos para:
 
-Extrae fechas, origen, destino, venue/dirección (si es ambigua, usa SerpAPI/Gemini para buscar la real).
+Leer mensajes en DMs (im:history)
 
-Pide y valida motivos de viaje, preferencias (aerolínea, hotel, asiento, equipaje, viajero frecuente).
+Enviar mensajes (chat:write)
 
-Valida datos: fechas coherentes, ciudades existentes, todos los montos y tarifas en USD, ninguna omisión.
+Leer usuarios (users:read)
 
-Opciones y confirmación:
+Usa el token y el signing secret correctos en las variables de entorno.
 
-Presenta al menos 3 vuelos y hoteles dentro de política. Permite cambiar cualquier dato antes de confirmar.
+5. Deploy en Google Cloud Run
+Empaqueta la app (Dockerfile recomendado) y despliega en Google Cloud Run.
 
-Si no hay opciones válidas, busca alternativas o lo informa y sugiere solución.
+Expón el servicio en el puerto 8080.
 
-Muestra siempre resumen antes de confirmar y enviar a Finanzas.
+Verifica que el endpoint /slack/events es accesible públicamente.
 
-Si algo falla, no avanzas y notificas al usuario (con logs).
+6. Uso de Gemini
+El bot usa la librería google-genai.
 
-Memoria y personalización:
+Sigue siempre la guía oficial para instanciar el cliente y realizar inferencia.
 
-Guarda preferencias y memoria de viajes. En siguientes viajes, solo confirma datos vigentes (“¿Quieres mismo hotel que la vez pasada?”).
+No uses librerías legacy ni métodos obsoletos.
 
-Después de cerrar la solicitud, sugiere tips y lugares en el destino, y pide feedback.
+El API key de Gemini debe estar en la variable de entorno GEMINI_API_KEY.
 
-Usa los datos previos para mejorar experiencia y nunca pedir dos veces lo mismo.
+7. Seguridad y QA
+Toda petición de Slack debe validar firma (X-Slack-Signature, X-Slack-Request-Timestamp).
 
-Robustez, debugging y QA
-Si el bot no responde en Slack, detecta y loguea:
+Los datos sensibles van cifrados en Firebase.
 
-Errores de conexión Slack API (auth, permisos, eventos).
+Todos los logs críticos (errores, caídas de servicio, fallos de Gemini, etc.) deben alertar al equipo técnico.
 
-Problemas de deploy (puertos, endpoints, timeouts Google Cloud).
+El bot nunca responde en canales, solo en DMs, y jamás expone datos sensibles fuera del contexto privado.
 
-Fallos al llamar Gemini o el agente IA alternativo (status codes, respuestas vacías, caídas).
+Troubleshooting
+Si el bot no responde en Slack:
 
-Problemas con Google Sheets (acceso, credenciales, limits).
+Revisa los logs del endpoint en Google Cloud Run.
 
-Errores en Firebase (conexión, escritura, reglas).
+Valida la configuración del webhook y firma de Slack.
 
-Exceptions no capturadas, stack traces y fallos lógicos.
+Asegúrate de que el puerto es 8080 y la ruta es /slack/events.
 
-Genera logs detallados y envía notificaciones al equipo técnico en errores críticos (por webhook, correo, Slack, lo que sea más rápido).
+Confirma que GEMINI_API_KEY y credenciales de Google están bien configuradas.
 
-Siempre avisa al usuario si hay un error técnico (“Estamos experimentando un problema, ya fue reportado al equipo. Por favor, intenta más tarde”).
+Si Gemini da error o timeout:
 
-Permite reanudar solicitudes interrumpidas (timeout, crash) recuperando contexto desde Firebase.
+El bot intentará fallback automático a un motor open source.
 
-Motor de IA conversacional
-Por default usa Gemini para entender y generar lenguaje natural.
+Si todo falla, el usuario será notificado y el error será logueado.
 
-Si Gemini no responde correctamente o no es suficiente, implementa un agente open source (Llama, Mistral, Rasa, etc.) y lo usas como fallback inmediato.
+Recursos útiles
+Guía oficial Gemini (Python)
 
-Si ninguna IA está disponible, avisa al usuario y reporta a ingeniería.
+Documentación Gemini
 
-No uses Okibi, ni ningún servicio de pago para el motor IA.
+API Slack Events
 
-User Stories y Criterios de Aceptación
-US1. Como usuario, quiero poder solicitar viajes en lenguaje natural y que el bot extraiga todo lo relevante sin forzar formatos.
-Criterio: Extrae y confirma todos los datos, sin requerir frases o comandos especiales.
+Google Cloud Run
 
-US2. Como usuario, quiero que el bot valide y confirme toda la información antes de enviar, para evitar errores.
-Criterio: Muestra resumen para confirmación antes de cerrar y enviar.
+Firebase Admin Python SDK
 
-US3. Como usuario, quiero que mis preferencias y datos sensibles se almacenen seguros y solo se pidan una vez, pero pueda actualizarlos.
-Criterio: Usa Firebase, confirma datos existentes antes de pedir y permite edición.
+License
+MIT (o la que corresponda a tu proyecto)
 
-US4. Como usuario, quiero recibir solo opciones dentro de política y saber cuando algo no se puede, con explicación clara.
-Criterio: Si algo excede límites, lo escala y explica por qué.
-
-US5. Como usuario, quiero modificar cualquier dato antes de la confirmación final, sin repetir todo el proceso.
-Criterio: Permite editar partes específicas del flujo sin resetear.
-
-US6. Como usuario, quiero que mis datos sensibles solo se pidan y expongan por DM, nunca en canales públicos.
-Criterio: Todas las interacciones confidenciales se hacen solo por DM.
-
-US7. Como usuario, quiero poder pausar y reanudar el proceso sin perder avance, en caso de interrupciones.
-Criterio: Guarda el progreso y recupera el contexto desde Firebase.
-
-US8. Como usuario, quiero que todos los montos y tarifas estén en USD.
-Criterio: Siempre presenta valores y cálculos en dólares estadounidenses.
-
-US9. Como usuario, quiero recibir sugerencias y feedback post-viaje, y que se tome en cuenta mi retroalimentación.
-Criterio: El bot sugiere lugares, pide feedback y aprende para la siguiente vez.
-
-US10. Como usuario, quiero que cualquier error técnico se reporte automáticamente y que siempre se me avise si no se pudo procesar mi solicitud.
-Criterio: El bot genera logs y avisa al usuario cada vez que hay un error.
-
-Checklist de QA
-¿Responde SIEMPRE a cualquier DM en Slack?
-
-¿Loguea todo error de integración, deploy o servicio externo?
-
-¿Valida todas las entradas contra política Creai y edge cases?
-
-¿Permite editar y confirmar cada dato antes de enviar?
-
-¿Escala solicitudes fuera de política?
-
-¿Solo almacena y pide datos sensibles una vez, permitiendo actualización?
-
-¿Opera 100 % bajo DM, nunca expone información en canales?
-
-¿Puede cambiar de Gemini a open source IA automáticamente si falla?
-
-¿Guarda memoria y preferencias por usuario?
-
-¿Sugiere lugares/tips y pide feedback post-viaje?
-
-¿Todos los precios están en USD?
-
-¿Permite reanudar procesos caídos sin perder avance?
-
-¿Siempre avisa al usuario de cualquier error, incluso si es técnico?
-
-No omitas ninguna función, validación, ni edge case. Desarrolla desde cero, usando Python. El agente debe ser robusto, resiliente y auditable, cumpliendo políticas, experiencia de usuario y QA descritos. El foco es que si el bot deja de responder o hay cualquier error, siempre lo detecta, lo loguea, lo reporta y lo comunica al usuario.
+Copiar
+Editar

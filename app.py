@@ -1,9 +1,15 @@
+
 import logging
 import os
 import threading
 from flask import Flask, request
 from slack_bolt import App
 from slack_bolt.adapter.flask import SlackRequestHandler
+# Main entrypoint for the travel bot
+import os
+import logging
+from slack_bolt import App
+from slack_bolt.adapter.socket_mode import SocketModeHandler
 
 from services.sheets import SheetService
 from services.firebase import FirebaseService
@@ -13,6 +19,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 slack_bot_token = os.environ.get("SLACK_BOT_TOKEN")
+
 slack_signing_secret = os.environ.get("SLACK_SIGNING_SECRET")
 
 if not slack_bot_token or not slack_signing_secret:
@@ -20,6 +27,14 @@ if not slack_bot_token or not slack_signing_secret:
 
 bolt_app = App(token=slack_bot_token, signing_secret=slack_signing_secret)
 handler = SlackRequestHandler(bolt_app)
+
+slack_app_token = os.environ.get("SLACK_APP_TOKEN")
+
+if not slack_bot_token or not slack_app_token:
+    raise ValueError("SLACK_BOT_TOKEN and SLACK_APP_TOKEN must be set")
+
+app = App(token=slack_bot_token)
+
 
 sheet_service = SheetService()
 firebase_service = FirebaseService()
@@ -57,3 +72,21 @@ def slack_events():
 
 if __name__ == "__main__":
     flask_app.run(host="0.0.0.0", port=8080)
+
+@app.event("app_mention")
+@app.event("message")
+def handle_message(event, say):
+    user = event.get("user")
+    text = event.get("text", "")
+    if not user:
+        return
+
+    logger.info("Received message from %s: %s", user, text)
+
+    response = ai_service.process_message(user, text)
+    say(response)
+
+if __name__ == "__main__":
+    handler = SocketModeHandler(app, slack_app_token)
+    handler.start()
+
