@@ -28,6 +28,7 @@ class TravelAssistant:
         self.serpapi = serpapi
 
     def _load_user(self, slack_id: str) -> dict:
+        """Load user data from Firestore or Sheets."""
         data = self.firebase.get_user_data(slack_id) or {}
         if not data:
             sheet_user = self.sheets.get_user(slack_id)
