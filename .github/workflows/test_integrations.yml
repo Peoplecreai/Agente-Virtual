@@ -19,14 +19,14 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install slack_sdk gspread google-auth google-cloud-firestore requests google-generativeai
+          pip install -r requirements.txt
 
       - name: Run integration tests
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           SLACK_TEST_CHANNEL: ${{ secrets.SLACK_TEST_CHANNEL }}
           SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
-          SERVICE_ACCOUNT: ${{ secrets.service-account }}
+          SERVICE_ACCOUNT: ${{ secrets.SERVICE_ACCOUNT }}
           GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
