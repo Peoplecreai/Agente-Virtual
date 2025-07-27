@@ -9,7 +9,7 @@ ai_module.client = None
 def test_ai_fallback():
     ai = ConversationalAI()
     response = ai.process_message("test", "Hola")
-    assert isinstance(response, str)
+    assert response == "Lo siento, actualmente no puedo procesar tu solicitud."
 
 if __name__ == "__main__":
     import sys

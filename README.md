@@ -7,7 +7,7 @@ Creai TravelBot es un asistente para gestionar solicitudes de viaje corporativo 
 ## Características principales
 
 - Conversación natural por DM en Slack.
-- **Eventos recibidos únicamente por HTTP POST** en `/slack/events`.
+- **Eventos recibidos únicamente por HTTP POST** en `/`.
 - IA principal: Gemini 2.5 Flash (`google-genai`) con fallback a modelos open source.
 - Configuración de usuarios en Google Sheets y almacenamiento seguro en Firestore.
 - Validación de firmas de Slack y registro detallado de errores.
@@ -56,7 +56,7 @@ SERPAPI_KEY=<tu_clave_serpapi>
 
 1. Crea una aplicación en [Slack API](https://api.slack.com/apps) si aún no existe.
 2. Activa **Event Subscriptions** y define la _Request URL_ a
-   `https://<tu-dominio>/slack/events`.
+   `https://<tu-dominio>/`.
 3. Otorga a la app los permisos `im:history`, `chat:write` y `users:read`.
 4. Copia el **Bot User OAuth Token** y el **Signing Secret** en las variables de entorno anteriores.
 5. Sigue la [guía oficial de Slack Events API](https://api.slack.com/apis/connections/events-api)
@@ -96,14 +96,14 @@ respuesta en `response.text`.
 flask run --host 0.0.0.0 --port 8080
 ```
 
-Slack enviará los eventos a `http://localhost:8080/slack/events` si usas una
+Slack enviará los eventos a `http://localhost:8080/` si usas una
 herramienta de túnel como `ngrok`.
 
 ### 7. Despliegue en Cloud Run
 
 1. Crea una imagen con tu herramienta de contenedores favorita.
 2. Despliega en Google Cloud Run exponiendo el puerto `8080`.
-3. Asegúrate de que el endpoint `/slack/events` sea público.
+3. Asegúrate de que el endpoint `/` sea público.
 
 ### 8. Pruebas
 

@@ -5,6 +5,5 @@ google-genai
 google-auth
 gspread
 google-cloud-firestore
-llama-cpp-python
 pytest
 requests
