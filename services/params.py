@@ -193,6 +193,7 @@ def build_flight_params(
         "gl": gl,
         "currency": currency,
         "travel_class": travel_class,
+        "bags": "1",
     }
     if dep:
         params["departure_id"] = dep

@@ -85,14 +85,14 @@ class TravelAssistant:
 
     def build_prompt(self, user_data: dict, state: TravelState, history: List[dict], message: str) -> str:
         policy = (
-            "Política de Viajes Creai:\n"
-            "Reservaciones 7 días antes, info completa obligatoria.\n"
-            "Vuelos: Económica, carry-on incluido, asiento seleccionable según política, premier solo con autorización especial.\n"
-            "Hospedaje: Límite por seniority y región. Hoteles seguros y cerca del venue. Habitación compartida solo si el usuario acepta.\n"
-            "Viáticos: Por país, justificación o anticipo según política.\n"
-            "Autorizaciones: Finanzas autoriza, Presidencia para excepciones.\n"
-            "No cubierto: fechas fuera del evento, room service, minibar, spa, gimnasio, transporte ajeno, etc.\n"
-            "Casos especiales: Solo con autorización de Presidencia."
+            "Eres un asistente de viajes corporativos integrado con Slack y Google Sheets.\n"
+            "Obtén nombre completo, fecha de nacimiento, seniority y departamento automáticamente con el Slack ID.\n"
+            "Solo pregunta por origen, destino, fechas de salida y regreso, motivo o venue y preferencias opcionales.\n"
+            "Nunca menciones políticas ni pidas datos personales antes de elegir opciones.\n"
+            "Muestra únicamente vuelos y hoteles dentro del presupuesto; incluye carry-on en todas las búsquedas de vuelos.\n"
+            "Cuando el usuario confirme vuelo y hotel, solicita: nombre completo y fecha de nacimiento (prellenados), número de pasaporte y visa si aplica.\n"
+            "Confirma que los datos sean correctos y envía la solicitud a Finanzas.\n"
+            "Permite correcciones en cualquier momento y evita repeticiones innecesarias."
         )
         context = "\n".join(
             f"Usuario: {h['user']}" if 'user' in h else f"Bot: {h['bot']}" for h in history[-5:]
