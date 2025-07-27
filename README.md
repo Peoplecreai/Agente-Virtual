@@ -8,7 +8,7 @@ Creai TravelBot es un asistente para gestionar solicitudes de viaje corporativo 
 
 - Conversación natural por DM en Slack.
 - **Eventos recibidos únicamente por HTTP POST** en `/slack/events`.
-- IA principal: Gemini (`google-generativeai`) con fallback a modelos open source.
+- IA principal: Gemini 2.5 Flash (`google-generativeai`) con fallback a modelos open source.
 - Configuración de usuarios en Google Sheets y almacenamiento seguro en Firebase.
 - Validación de firmas de Slack y registro detallado de errores.
 
@@ -70,7 +70,7 @@ El bot emplea el paquete `google-generativeai` siguiendo la guía oficial de
 ```python
 from google import generativeai as genai
 genai.configure(api_key=os.environ["GEMINI_API_KEY"])
-model = genai.GenerativeModel("gemini-pro")
+model = genai.GenerativeModel("gemini-2.5-flash")
 ```
 
 Todas las llamadas deben realizarse tal cual lo especifica la documentación,

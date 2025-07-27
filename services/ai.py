@@ -28,8 +28,8 @@ class ConversationalAI:
         if GEMINI_AVAILABLE:
             try:
                 from google.generativeai import GenerativeModel
-                self.gemini_model = GenerativeModel("gemini-pro")
-                logger.info("Using Gemini model")
+                self.gemini_model = GenerativeModel("gemini-2.5-flash")
+                logger.info("Using Gemini 2.5 Flash model")
             except Exception as e:
                 logger.error("Failed to init Gemini: %s", e)
                 self.gemini_model = None
