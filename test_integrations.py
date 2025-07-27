@@ -1,8 +1,3 @@
-try:
-    import pytest
-    pytest.skip("integration script only", allow_module_level=True)
-except Exception:
-    pass
 import os
 import json
 import uuid
@@ -16,14 +11,12 @@ from google import genai
 
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
 
-
 def run_test(name, func):
     try:
         func()
         print(f"{name}: OK")
     except Exception as e:
         print(f"{name}: FAIL - {e}")
-
 
 def test_slack():
     token = os.environ["SLACK_BOT_TOKEN"]
@@ -35,18 +28,16 @@ def test_slack():
     if not resp.get("ok"):
         raise RuntimeError(resp.get("error", "unknown error"))
 
-
 def test_google_sheets():
-    creds_info = json.loads(os.environ["service-account"])
+    creds_info = json.loads(os.environ["SERVICE_ACCOUNT"])
     creds = Credentials.from_service_account_info(creds_info, scopes=SCOPES)
     client = gspread.authorize(creds)
     sheet_id = os.environ["GOOGLE_SHEET_ID"]
     sheet = client.open_by_key(sheet_id).sheet1
     _ = sheet.acell("A1").value
 
-
 def test_firestore():
-    creds_info = json.loads(os.environ["service-account"])
+    creds_info = json.loads(os.environ["SERVICE_ACCOUNT"])
     client = firestore.Client.from_service_account_info(creds_info)
     doc_ref = client.collection("test").document(str(uuid.uuid4()))
     doc_ref.set({"value": "ok"})
@@ -54,7 +45,6 @@ def test_firestore():
     if not doc.exists or doc.to_dict().get("value") != "ok":
         raise RuntimeError("Firestore read failed")
     doc_ref.delete()
-
 
 def test_serpapi():
     api_key = os.environ["SERPAPI_KEY"]
@@ -71,13 +61,12 @@ def test_serpapi():
     if "error" in data:
         raise RuntimeError(data["error"])
 
-
 def test_gemini():
-    client = genai.Client()
+    api_key = os.environ["GEMINI_API_KEY"]
+    client = genai.Client(api_key=api_key)
     response = client.models.generate_content(model="gemini-2.5-flash", contents="Hola")
     if not getattr(response, "text", ""):
         raise RuntimeError("Empty response")
-
 
 if __name__ == "__main__":
     run_test("Slack", test_slack)
