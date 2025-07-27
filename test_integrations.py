@@ -49,13 +49,19 @@ def test_firestore():
 
 def test_serpapi():
     api_key = os.environ["SERPAPI_KEY"]
-    future_date = (datetime.date.today() + datetime.timedelta(days=14)).strftime("%Y-%m-%d")
+    future_departure = (datetime.date.today() + datetime.timedelta(days=2)).strftime("%Y-%m-%d")
+    future_return = (datetime.date.today() + datetime.timedelta(days=7)).strftime("%Y-%m-%d")
     params = {
         "api_key": api_key,
         "engine": "google_flights",
-        "departure_id": "MEX",   # Aeropuerto CDMX
-        "arrival_id": "SFO",     # Aeropuerto San Francisco
-        "outbound_date": future_date,
+        "hl": "en",
+        "gl": "mx",
+        "departure_id": "MEX",
+        "arrival_id": "SFO",
+        "outbound_date": future_departure,
+        "return_date": future_return,
+        "currency": "USD",
+        "travel_class": "1"
     }
     resp = requests.get("https://serpapi.com/search.json", params=params, timeout=10)
     resp.raise_for_status()
