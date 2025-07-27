@@ -13,6 +13,12 @@ class TravelState:
     reason: Optional[str] = None
     flight_pref: Optional[str] = None
     hotel_pref: Optional[str] = None
+    frequent_flyer: Optional[str] = None
+    seat_pref: Optional[str] = None
+    budget: Optional[str] = None
+    passport: Optional[bool] = None
+    visa: Optional[bool] = None
+    share_room: Optional[bool] = None
 
     def to_dict(self) -> Dict[str, str]:
         return {k: v for k, v in self.__dict__.items() if v}
