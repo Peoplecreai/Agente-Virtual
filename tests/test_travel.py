@@ -2,6 +2,7 @@ import sys, os, json
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+os.environ.setdefault("GEMINI_API_KEY", "dummy")
 
 if "service-account" not in os.environ:
     key = rsa.generate_private_key(public_exponent=65537, key_size=2048)

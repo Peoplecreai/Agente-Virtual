@@ -8,7 +8,7 @@ try:
     # The Client will read the GEMINI_API_KEY environment variable.
     client = genai.Client()
     GEMINI_AVAILABLE = True
-except Exception as e:
+except ImportError as e:
     logger.warning("Gemini not available: %s", e)
     client = None
     GEMINI_AVAILABLE = False
