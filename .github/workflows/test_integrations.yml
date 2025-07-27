@@ -1,76 +1,34 @@
-import os
-import json
-import uuid
-import requests
+name: Test API Integrations
 
-from slack_sdk import WebClient
-import gspread
-from google.oauth2.service_account import Credentials
-from google.cloud import firestore
-from google import genai
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main   # O tu rama principal
 
-SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
+jobs:
+  integration-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-def run_test(name, func):
-    try:
-        func()
-        print(f"{name}: OK")
-    except Exception as e:
-        print(f"{name}: FAIL - {e}")
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
 
-def test_slack():
-    token = os.environ["SLACK_BOT_TOKEN"]
-    channel = os.environ.get("SLACK_TEST_CHANNEL")
-    if not channel:
-        raise RuntimeError("SLACK_TEST_CHANNEL not set")
-    client = WebClient(token=token)
-    resp = client.chat_postMessage(channel=channel, text="Integration test")
-    if not resp.get("ok"):
-        raise RuntimeError(resp.get("error", "unknown error"))
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
 
-def test_google_sheets():
-    creds_info = json.loads(os.environ["SERVICE_ACCOUNT"])
-    creds = Credentials.from_service_account_info(creds_info, scopes=SCOPES)
-    client = gspread.authorize(creds)
-    sheet_id = os.environ["GOOGLE_SHEET_ID"]
-    sheet = client.open_by_key(sheet_id).sheet1
-    _ = sheet.acell("A1").value
-
-def test_firestore():
-    creds_info = json.loads(os.environ["SERVICE_ACCOUNT"])
-    client = firestore.Client.from_service_account_info(creds_info)
-    doc_ref = client.collection("test").document(str(uuid.uuid4()))
-    doc_ref.set({"value": "ok"})
-    doc = doc_ref.get()
-    if not doc.exists or doc.to_dict().get("value") != "ok":
-        raise RuntimeError("Firestore read failed")
-    doc_ref.delete()
-
-def test_serpapi():
-    api_key = os.environ["SERPAPI_KEY"]
-    params = {
-        "api_key": api_key,
-        "engine": "google_flights",
-        "departure_id": "MEX",
-        "arrival_id": "NYC",
-        "outbound_date": "2024-09-01",
-    }
-    resp = requests.get("https://serpapi.com/search.json", params=params, timeout=10)
-    resp.raise_for_status()
-    data = resp.json()
-    if "error" in data:
-        raise RuntimeError(data["error"])
-
-def test_gemini():
-    api_key = os.environ["GEMINI_API_KEY"]
-    client = genai.Client(api_key=api_key)
-    response = client.models.generate_content(model="gemini-2.5-flash", contents="Hola")
-    if not getattr(response, "text", ""):
-        raise RuntimeError("Empty response")
-
-if __name__ == "__main__":
-    run_test("Slack", test_slack)
-    run_test("Google Sheets", test_google_sheets)
-    run_test("Firestore", test_firestore)
-    run_test("SerpApi", test_serpapi)
-    run_test("Gemini", test_gemini)
+      - name: Run integration tests
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_TEST_CHANNEL: ${{ secrets.SLACK_TEST_CHANNEL }}
+          SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
+          SERVICE_ACCOUNT: ${{ secrets.SERVICE_ACCOUNT }}
+          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          python test_integrations.py
