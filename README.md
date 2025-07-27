@@ -52,6 +52,18 @@ GOOGLE_SHEET_ID=<id_de_tu_hoja>
 SERPAPI_KEY=<tu_clave_serpapi>
 ```
 
+Para despliegues en Cloud Run es recomendable almacenar estas variables como
+**Secretos de Google Cloud** y referenciarlas durante el despliegue. Crea cada
+secreto con `gcloud secrets create` y añade su valor con
+`gcloud secrets versions add`. Por ejemplo:
+
+```bash
+echo -n "$SLACK_BOT_TOKEN" | gcloud secrets create slack-bot-token --data-file=-
+```
+
+Luego, al desplegar usa la opción `--set-secrets` de `gcloud run deploy` para
+inyectar las variables sin exponerlas.
+
 ### 4. Configuración de Slack
 
 1. Crea una aplicación en [Slack API](https://api.slack.com/apps) si aún no existe.
@@ -102,10 +114,31 @@ herramienta de túnel como `ngrok`.
 ### 7. Despliegue en Cloud Run
 
 1. Crea una imagen con tu herramienta de contenedores favorita.
-2. Despliega en Google Cloud Run exponiendo el puerto `8080`.
+2. Despliega en Google Cloud Run exponiendo el puerto `8080` y referenciando
+   los secretos almacenados:
+
+   ```bash
+   gcloud run deploy travel-bot \
+     --image gcr.io/PROYECTO/imagen:tag \
+     --set-secrets \
+       GEMINI_API_KEY=projects/PROYECTO/secrets/gemini-api-key:latest,\
+       SLACK_SIGNING_SECRET=projects/PROYECTO/secrets/slack-signing-secret:latest,\
+       SLACK_BOT_TOKEN=projects/PROYECTO/secrets/slack-bot-token:latest,\
+       service-account=projects/PROYECTO/secrets/service-account:latest,\
+       GOOGLE_SHEET_ID=projects/PROYECTO/secrets/google-sheet-id:latest,\
+       SERPAPI_KEY=projects/PROYECTO/secrets/serpapi-key:latest
+   ```
+
 3. Asegúrate de que el endpoint `/` sea público.
 
-### 8. Pruebas
+### 8. Rotación de credenciales
+
+Si las variables anteriores estuvieron expuestas en despliegues previos,
+genera nuevas versiones de cada secreto con `gcloud secrets versions add` y
+vuelve a desplegar con `--set-secrets`.  Revisa en Cloud Logging que las
+credenciales ya no aparezcan en los registros.
+
+### 9. Pruebas
 
 Ejecuta los tests con:
 
