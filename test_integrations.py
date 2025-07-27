@@ -2,6 +2,7 @@ import os
 import json
 import uuid
 import requests
+import datetime
 
 from slack_sdk import WebClient
 import gspread
@@ -48,12 +49,13 @@ def test_firestore():
 
 def test_serpapi():
     api_key = os.environ["SERPAPI_KEY"]
+    future_date = (datetime.date.today() + datetime.timedelta(days=14)).strftime("%Y-%m-%d")
     params = {
         "api_key": api_key,
         "engine": "google_flights",
-        "departure_id": "MEX",
-        "arrival_id": "NYC",
-        "outbound_date": "2024-09-01",
+        "departure_id": "MEX",   # Aeropuerto CDMX
+        "arrival_id": "SFO",     # Aeropuerto San Francisco
+        "outbound_date": future_date,
     }
     resp = requests.get("https://serpapi.com/search.json", params=params, timeout=10)
     resp.raise_for_status()
