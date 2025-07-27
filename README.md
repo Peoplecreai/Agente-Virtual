@@ -9,7 +9,7 @@ Creai TravelBot es un asistente para gestionar solicitudes de viaje corporativo 
 - Conversación natural por DM en Slack.
 - **Eventos recibidos únicamente por HTTP POST** en `/slack/events`.
 - IA principal: Gemini 2.5 Flash (`google-genai`) con fallback a modelos open source.
-- Configuración de usuarios en Google Sheets y almacenamiento seguro en Firebase.
+- Configuración de usuarios en Google Sheets y almacenamiento seguro en Firestore.
 - Validación de firmas de Slack y registro detallado de errores.
 
 ---
@@ -36,7 +36,7 @@ pip install -r requirements.txt
 - `Flask`
 - `slack_bolt`
 - `google-genai`
-- `firebase-admin`
+- `google-cloud-firestore`
 - `gspread`
 
 ### 3. Variables de entorno
@@ -119,7 +119,7 @@ pytest
 
 - [Documentación oficial de Slack Events API](https://api.slack.com/apis/connections/events-api)
 - [Guía de `google-genai`](https://ai.google.dev/docs)
-- [Firebase Admin Python SDK](https://firebase.google.com/docs/admin/setup)
+- [Guía de Firestore](https://cloud.google.com/firestore/docs)
 - [Google Cloud Run](https://cloud.google.com/run)
 
 ## Licencia
