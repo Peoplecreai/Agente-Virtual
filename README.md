@@ -52,6 +52,9 @@ GOOGLE_SHEET_ID=<id_de_tu_hoja>
 SERPAPI_KEY=<tu_clave_serpapi>
 ```
 
+`SERPAPI_KEY` se utiliza para resolver nombres de ciudades a códigos IATA en
+`build_flight_params` mediante el endpoint de Google Maps de SerpApi.
+
 ### 4. Configuración de Slack
 
 1. Crea una aplicación en [Slack API](https://api.slack.com/apps) si aún no existe.
