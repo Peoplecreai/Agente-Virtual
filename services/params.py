@@ -54,7 +54,6 @@ AIRLINES = {
 
 TRAVEL_CLASS = {
     "ECONOMICA": "1",
-    "ECONOMICA": "1",
     "ECONOMÍA": "1",
     "NEGOCIOS": "2",
     "BUSINESS": "2",
