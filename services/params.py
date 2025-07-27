@@ -70,41 +70,45 @@ def _normalize(text: str) -> str:
     return "".join(c for c in text if unicodedata.category(c) != "Mn")
 
 
-def _lookup_city(name: str, maps_key: Optional[str]) -> Optional[str]:
-    """Resolve city name to an IATA code, optionally using Google Places."""
+def _lookup_city(name: str, api_key: str) -> Optional[str]:
+    """Resolve city name to an IATA code using SerpApi's Google Maps API."""
     key = _normalize(name)
     if key in CITY_TO_IATA:
         return CITY_TO_IATA[key]
-    if maps_key:
-        try:
-            url = "https://maps.googleapis.com/maps/api/place/textsearch/json"
-            params = {"query": f"airport {name}", "key": maps_key}
-            resp = requests.get(url, params=params, timeout=5)
-            resp.raise_for_status()
-            for res in resp.json().get("results", []):
-                m = re.search(r"\b([A-Z]{3})\b", res.get("name", ""))
-                if m:
-                    return m.group(1)
-        except Exception:
-            pass
+    try:
+        url = "https://serpapi.com/search.json"
+        params = {
+            "engine": "google_maps",
+            "q": f"airport {name}",
+            "api_key": api_key,
+        }
+        resp = requests.get(url, params=params, timeout=5)
+        resp.raise_for_status()
+        for res in resp.json().get("local_results", []):
+            name_field = res.get("title") or res.get("name", "")
+            m = re.search(r"\b([A-Z]{3})\b", name_field)
+            if m:
+                return m.group(1)
+    except Exception:
+        pass
     return None
 
 
-def _resolve_airport(token: str, maps_key: Optional[str]) -> Optional[str]:
+def _resolve_airport(token: str, api_key: str) -> Optional[str]:
     token = _normalize(token)
     if re.fullmatch(r"[A-Z]{3}", token):
         return token
-    return _lookup_city(token, maps_key)
+    return _lookup_city(token, api_key)
 
 
-def _extract_airports(text: str, maps_key: Optional[str]) -> Tuple[Optional[str], Optional[str]]:
+def _extract_airports(text: str, api_key: str) -> Tuple[Optional[str], Optional[str]]:
     clean = _normalize(re.sub(r"[^\w\s]", " ", text))
     words = clean.split()
     found: list[Tuple[int, str]] = []
     for size in range(3, 0, -1):
         for i in range(len(words) - size + 1):
             phrase = " ".join(words[i : i + size])
-            code = _resolve_airport(phrase, maps_key)
+            code = _resolve_airport(phrase, api_key)
             if code and code in ACTIVE_INTL_AIRPORTS:
                 found.append((i, code))
     found.sort(key=lambda x: x[0])
@@ -181,8 +185,7 @@ def build_flight_params(
     travel_class: str = "1",
 ) -> Dict[str, str]:
     """Convert a natural language request into SerpApi parameters for flights."""
-    maps_key = os.environ.get("GOOGLE_MAPS_API_KEY")
-    dep, arr = _extract_airports(text, maps_key)
+    dep, arr = _extract_airports(text, api_key)
     out_date, ret_date = _extract_dates(text)
 
     params = {

@@ -52,6 +52,8 @@ GOOGLE_SHEET_ID=<id_de_tu_hoja>
 SERPAPI_KEY=<tu_clave_serpapi>
 ```
 
+`SERPAPI_KEY` se utiliza para resolver nombres de ciudades a códigos IATA en
+
 Para despliegues en Cloud Run es recomendable almacenar estas variables como
 **Secretos de Google Cloud** y referenciarlas durante el despliegue. Crea cada
 secreto con `gcloud secrets create` y añade su valor con
