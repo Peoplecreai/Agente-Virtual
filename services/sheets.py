@@ -1,4 +1,5 @@
 import os
+import json
 import logging
 import gspread
 from google.oauth2.service_account import Credentials
@@ -9,13 +10,12 @@ SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
 
 class SheetService:
     def __init__(self):
-        creds_json = os.environ.get("GOOGLE_SERVICE_ACCOUNT")
+        creds_json = os.environ.get("service-account")
         if not creds_json:
-            logger.warning("GOOGLE_SERVICE_ACCOUNT not set; Sheets access disabled")
-            self.client = None
-        else:
-            creds = Credentials.from_service_account_file(creds_json, scopes=SCOPES)
-            self.client = gspread.authorize(creds)
+            raise RuntimeError("service-account environment variable not set")
+        creds_info = json.loads(creds_json)
+        creds = Credentials.from_service_account_info(creds_info, scopes=SCOPES)
+        self.client = gspread.authorize(creds)
         self.sheet_id = os.environ.get("GOOGLE_SHEET_ID")
 
     def get_user(self, slack_id: str) -> dict | None:
