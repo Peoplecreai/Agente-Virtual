@@ -65,6 +65,23 @@ class TravelAssistant:
                     state.start_date = dates[0]
                 if not state.end_date and len(dates) >= 2:
                     state.end_date = dates[1]
+        if not state.seat_pref:
+            if "ventana" in text.lower():
+                state.seat_pref = "ventana"
+            elif "pasillo" in text.lower():
+                state.seat_pref = "pasillo"
+        if not state.share_room and "compartir" in text.lower():
+            state.share_room = True
+        if "no compartir" in text.lower():
+            state.share_room = False
+        if not state.passport and "pasaporte" in text.lower():
+            state.passport = "si" in text.lower()
+        if not state.visa and "visa" in text.lower():
+            state.visa = "si" in text.lower()
+        if not state.budget:
+            m = re.search(r"(?:\$|presupuesto\s*)(\d+)", text.lower())
+            if m:
+                state.budget = m.group(1)
 
     def build_prompt(self, user_data: dict, state: TravelState, history: List[dict], message: str) -> str:
         policy = (
@@ -81,9 +98,8 @@ class TravelAssistant:
             f"Usuario: {h['user']}" if 'user' in h else f"Bot: {h['bot']}" for h in history[-5:]
         )
         state_lines = "\n".join(f"{k}: {v}" for k, v in state.to_dict().items()) or "ninguno"
-        missing = [
-            f for f in ["origin", "destination", "start_date", "end_date"] if not getattr(state, f)
-        ]
+        required_fields = ["origin", "destination", "start_date", "end_date"]
+        missing = [f for f in required_fields if not getattr(state, f)]
         missing_text = ", ".join(missing) if missing else "ninguno"
         prompt = (
             f"{policy}\n"
