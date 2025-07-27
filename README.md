@@ -49,6 +49,7 @@ SLACK_SIGNING_SECRET=<tu_signing_secret>
 SLACK_BOT_TOKEN=<tu_bot_token>
 GOOGLE_SERVICE_ACCOUNT=<ruta/al/service_account.json>
 GOOGLE_SHEET_ID=<id_de_tu_hoja>
+SERPAPI_KEY=<tu_clave_serpapi>
 ```
 
 ### 4. Configuración de Slack
