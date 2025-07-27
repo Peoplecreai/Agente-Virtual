@@ -34,6 +34,7 @@ class SerpAPIService:
             "departure_id": origin,
             "arrival_id": destination,
             "outbound_date": date,
+            "bags": "1",
         }
         data = self._request("search", params)
         return data.get("flights_results", []) if data else []

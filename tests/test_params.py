@@ -12,6 +12,7 @@ def test_build_flight_params_full_dates():
     assert params["outbound_date"] == "2024-09-05"
     assert params["return_date"] == "2024-09-09"
     assert params["engine"] == "google_flights"
+    assert params["bags"] == "1"
 
 
 def test_build_flight_params_partial_dates():
@@ -21,6 +22,7 @@ def test_build_flight_params_partial_dates():
     assert params["arrival_id"] == "SFO"
     assert re.match(r"\d{4}-\d{2}-\d{2}", params["outbound_date"])
     assert re.match(r"\d{4}-\d{2}-\d{2}", params["return_date"])
+    assert params["bags"] == "1"
 
 
 def test_compound_city_and_one_way():
@@ -31,6 +33,7 @@ def test_compound_city_and_one_way():
     assert "return_date" not in params
     assert params.get("include_airlines") == "AM"
     assert params["travel_class"] == "2"
+    assert params["bags"] == "1"
 
 
 def test_default_dates_future_weekdays():
@@ -39,4 +42,5 @@ def test_default_dates_future_weekdays():
     out = date.fromisoformat(params["outbound_date"])
     assert out >= date.today() + timedelta(days=3)
     assert out.weekday() < 5
+    assert params["bags"] == "1"
 
