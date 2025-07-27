@@ -8,7 +8,7 @@ Creai TravelBot es un asistente para gestionar solicitudes de viaje corporativo 
 
 - Conversación natural por DM en Slack.
 - **Eventos recibidos únicamente por HTTP POST** en `/slack/events`.
-- IA principal: Gemini 2.5 Flash (`google-generativeai`) con fallback a modelos open source.
+- IA principal: Gemini 2.5 Flash (`google-genai`) con fallback a modelos open source.
 - Configuración de usuarios en Google Sheets y almacenamiento seguro en Firebase.
 - Validación de firmas de Slack y registro detallado de errores.
 
@@ -35,7 +35,7 @@ pip install -r requirements.txt
 
 - `Flask`
 - `slack_bolt`
-- `google-generativeai`
+- `google-genai`
 - `firebase-admin`
 - `gspread`
 
@@ -64,14 +64,26 @@ GOOGLE_SHEET_ID=<id_de_tu_hoja>
 
 ### 5. Uso de la API Gemini
 
-El bot emplea el paquete `google-generativeai` siguiendo la guía oficial de
+El bot emplea el paquete `google-genai` siguiendo la guía oficial de
 [Google AI Studio](https://ai.google.dev/docs).  Para inicializar el cliente:
 
 ```python
-from google import generativeai as genai
-genai.configure(api_key=os.environ["GEMINI_API_KEY"])
-model = genai.GenerativeModel("gemini-2.5-flash")
+from google import genai
+
+client = genai.Client()
+
+response = client.models.generate_content(
+    model="gemini-2.5-flash",
+    contents="Tu texto",
+)
+print(response.text)
 ```
+
+> **Nota:** El paquete oficial para interactuar con Gemini es `google-genai`.
+> Configura la clave `GEMINI_API_KEY` en tu entorno y crea siempre un cliente
+> con `genai.Client()` para realizar las llamadas. Modelos recomendados:
+> `gemini-2.5-flash` para texto general y `gemini-2.5-pro` para tareas de
+> código o razonamiento.
 
 Todas las llamadas deben realizarse tal cual lo especifica la documentación,
 utilizando `generate_content` para enviar el texto del usuario y obteniendo la
@@ -105,7 +117,7 @@ pytest
 ## Recursos adicionales
 
 - [Documentación oficial de Slack Events API](https://api.slack.com/apis/connections/events-api)
-- [Guía de `google-generativeai`](https://ai.google.dev/docs)
+- [Guía de `google-genai`](https://ai.google.dev/docs)
 - [Firebase Admin Python SDK](https://firebase.google.com/docs/admin/setup)
 - [Google Cloud Run](https://cloud.google.com/run)
 
