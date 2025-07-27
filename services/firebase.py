@@ -1,4 +1,5 @@
 import os
+import json
 import logging
 from typing import Any
 import firebase_admin
@@ -8,12 +9,11 @@ logger = logging.getLogger(__name__)
 
 class FirebaseService:
     def __init__(self):
-        creds_json = os.environ.get("GOOGLE_SERVICE_ACCOUNT")
+        creds_json = os.environ.get("service-account")
         if not creds_json:
-            logger.warning("GOOGLE_SERVICE_ACCOUNT not set; Firebase disabled")
-            self.client = None
-            return
-        cred = credentials.Certificate(creds_json)
+            raise RuntimeError("service-account environment variable not set")
+        creds_info = json.loads(creds_json)
+        cred = credentials.Certificate(creds_info)
         firebase_admin.initialize_app(cred)
         self.client = firestore.client()
 
