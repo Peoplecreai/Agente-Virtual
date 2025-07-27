@@ -2,8 +2,7 @@ import os
 import json
 import logging
 from typing import Any
-import firebase_admin
-from firebase_admin import credentials, firestore
+from google.cloud import firestore
 
 logger = logging.getLogger(__name__)
 
@@ -13,9 +12,7 @@ class FirebaseService:
         if not creds_json:
             raise RuntimeError("service-account environment variable not set")
         creds_info = json.loads(creds_json)
-        cred = credentials.Certificate(creds_info)
-        firebase_admin.initialize_app(cred)
-        self.client = firestore.client()
+        self.client = firestore.Client.from_service_account_info(creds_info)
 
     def get_user_data(self, slack_id: str) -> dict | None:
         if not self.client:

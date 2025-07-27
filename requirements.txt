@@ -4,7 +4,7 @@ slack_bolt
 google-genai
 google-auth
 gspread
-firebase-admin
+google-cloud-firestore
 llama-cpp-python
 pytest
 requests
