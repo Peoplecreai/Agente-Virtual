@@ -3,14 +3,14 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-if "service-account" not in os.environ:
+if "SERVICE_ACCOUNT" not in os.environ:
     key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
     private_key = key.private_bytes(
         encoding=serialization.Encoding.PEM,
         format=serialization.PrivateFormat.PKCS8,
         encryption_algorithm=serialization.NoEncryption(),
     ).decode()
-    os.environ["service-account"] = json.dumps(
+    os.environ["SERVICE_ACCOUNT"] = json.dumps(
         {
             "type": "service_account",
             "project_id": "dummy",
