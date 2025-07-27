@@ -1,5 +1,6 @@
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+os.environ.setdefault("GEMINI_API_KEY", "dummy")
 import services.ai as ai_module
 from services.ai import ConversationalAI
 
