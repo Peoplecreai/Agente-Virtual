@@ -43,12 +43,20 @@ def handle_dm(event, say, ack):
     say(response)
 
 
-@flask_app.route("/", methods=["POST"])
+@flask_app.route("/", methods=["POST", "GET"])
 def slack_events():
+    if request.method != "POST":
+        return "", 200
     payload = request.get_json(silent=True) or {}
-    if payload.get("type") == "url_verification":
-        return {"challenge": payload.get("challenge")}
-    return handler.handle(request)
+    try:
+        if payload.get("type") == "url_verification":
+            return {"challenge": payload.get("challenge")}
+        resp = handler.handle(request)
+        resp.status_code = 200
+        return resp
+    except Exception as e:
+        logger.exception("Error processing Slack event: %s", e)
+        return {"ok": False}, 200
 
 
 if __name__ == "__main__":
