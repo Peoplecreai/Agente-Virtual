@@ -3,6 +3,7 @@ import json
 import uuid
 import requests
 import datetime
+import pytest
 
 from slack_sdk import WebClient
 import gspread
@@ -11,6 +12,18 @@ from google.cloud import firestore
 from google import genai
 
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
+
+required_env = [
+    "SLACK_BOT_TOKEN",
+    "SERVICE_ACCOUNT",
+    "GOOGLE_SHEET_ID",
+    "SERPAPI_KEY",
+    "GEMINI_API_KEY",
+]
+
+missing = [e for e in required_env if e not in os.environ]
+if missing:
+    pytest.skip("integration tests require credentials", allow_module_level=True)
 
 def run_test(name, func):
     try:
