@@ -13,7 +13,7 @@ from services.travel import TravelAssistant
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Slack app setup (do not modify request handling route)
+# Slack app setup
 bolt_app = App(token=os.environ.get("SLACK_BOT_TOKEN"),
                signing_secret=os.environ.get("SLACK_SIGNING_SECRET"))
 handler = SlackRequestHandler(bolt_app)
@@ -43,8 +43,11 @@ def handle_dm(event, say, ack):
     say(response)
 
 
-@flask_app.route("/slack/events", methods=["POST"])
+@flask_app.route("/", methods=["POST"])
 def slack_events():
+    payload = request.get_json(silent=True) or {}
+    if payload.get("type") == "url_verification":
+        return {"challenge": payload.get("challenge")}
     return handler.handle(request)
 
 
