@@ -92,6 +92,13 @@ class TravelAssistant:
             "Muestra solo opciones de vuelos y hoteles dentro del presupuesto y siempre incluye carry-on en las búsquedas de vuelos.\n"
             "Una vez elegidos vuelo y hotel, confirma nombre y fecha de nacimiento prellenados y pide número de pasaporte y visa si aplica.\n"
             "Verifica la información y envía la solicitud a Finanzas sin repetir datos innecesariamente."
+            "Obtén nombre completo, fecha de nacimiento, seniority y departamento automáticamente con el Slack ID.\n"
+            "Solo pregunta por origen, destino, fechas de salida y regreso, motivo o venue y preferencias opcionales.\n"
+            "Nunca menciones políticas ni pidas datos personales antes de elegir opciones.\n"
+            "Muestra únicamente vuelos y hoteles dentro del presupuesto; incluye carry-on en todas las búsquedas de vuelos.\n"
+            "Cuando el usuario confirme vuelo y hotel, solicita: nombre completo y fecha de nacimiento (prellenados), número de pasaporte y visa si aplica.\n"
+            "Confirma que los datos sean correctos y envía la solicitud a Finanzas.\n"
+            "Permite correcciones en cualquier momento y evita repeticiones innecesarias."
         )
         context = "\n".join(
             f"Usuario: {h['user']}" if 'user' in h else f"Bot: {h['bot']}" for h in history[-5:]
