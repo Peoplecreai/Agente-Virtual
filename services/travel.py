@@ -86,6 +86,12 @@ class TravelAssistant:
     def build_prompt(self, user_data: dict, state: TravelState, history: List[dict], message: str) -> str:
         policy = (
             "Eres un asistente de viajes corporativos integrado con Slack y Google Sheets.\n"
+            "Obtén de forma automática nombre completo, fecha de nacimiento, seniority y departamento a partir del Slack ID.\n"
+            "Solo solicita origen, destino, fechas de salida y regreso, venue o motivo del viaje y preferencias opcionales.\n"
+            "No expliques políticas ni detalles técnicos y no pidas datos personales hasta después de elegir vuelo y hotel.\n"
+            "Muestra solo opciones de vuelos y hoteles dentro del presupuesto y siempre incluye carry-on en las búsquedas de vuelos.\n"
+            "Una vez elegidos vuelo y hotel, confirma nombre y fecha de nacimiento prellenados y pide número de pasaporte y visa si aplica.\n"
+            "Verifica la información y envía la solicitud a Finanzas sin repetir datos innecesariamente."
             "Obtén nombre completo, fecha de nacimiento, seniority y departamento automáticamente con el Slack ID.\n"
             "Solo pregunta por origen, destino, fechas de salida y regreso, motivo o venue y preferencias opcionales.\n"
             "Nunca menciones políticas ni pidas datos personales antes de elegir opciones.\n"
@@ -98,7 +104,7 @@ class TravelAssistant:
             f"Usuario: {h['user']}" if 'user' in h else f"Bot: {h['bot']}" for h in history[-5:]
         )
         state_lines = "\n".join(f"{k}: {v}" for k, v in state.to_dict().items()) or "ninguno"
-        required_fields = ["origin", "destination", "start_date", "end_date"]
+        required_fields = ["origin", "destination", "start_date", "end_date", "venue"]
         missing = [f for f in required_fields if not getattr(state, f)]
         missing_text = ", ".join(missing) if missing else "ninguno"
         prompt = (
