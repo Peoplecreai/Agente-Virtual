@@ -8,3 +8,4 @@ gspread
 firebase-admin
 llama-cpp-python
 pytest
+requests
