@@ -1,13 +1,14 @@
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 
 try:
     from google import genai
 
-    # The Client will read the GEMINI_API_KEY environment variable.
-    client = genai.Client()
-    GEMINI_AVAILABLE = True
+    api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+    client = genai.Client(api_key=api_key) if api_key else None
+    GEMINI_AVAILABLE = client is not None
 except ImportError as e:
     logger.warning("Gemini not available: %s", e)
     client = None
