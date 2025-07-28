@@ -48,7 +48,7 @@ Configura un archivo `.env` (o exporta en tu entorno) con:
 GEMINI_API_KEY=<tu_api_key>
 SLACK_SIGNING_SECRET=<tu_signing_secret>
 SLACK_BOT_TOKEN=<tu_bot_token>
-service-account='<contenido_json>'
+SERVICE_ACCOUNT='<contenido_json>'
 GOOGLE_SHEET_ID=<id_de_tu_hoja>
 SERPAPI_KEY=<tu_clave_serpapi>
 ```

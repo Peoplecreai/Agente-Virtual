@@ -10,9 +10,9 @@ SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
 
 class SheetService:
     def __init__(self):
-        creds_json = os.environ.get("service-account")
+        creds_json = os.environ.get("SERVICE_ACCOUNT")
         if not creds_json:
-            raise RuntimeError("service-account environment variable not set")
+            raise RuntimeError("SERVICE_ACCOUNT environment variable not set")
         creds_info = json.loads(creds_json)
         creds = Credentials.from_service_account_info(creds_info, scopes=SCOPES)
         self.client = gspread.authorize(creds)
