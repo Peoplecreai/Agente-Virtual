@@ -1,9 +1,11 @@
 
 Flask
-slack_bolt
+slack_sdk
+python-dotenv
 google-genai
 google-auth
 gspread
 google-cloud-firestore
 pytest
 requests
+cryptography

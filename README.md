@@ -34,7 +34,8 @@ pip install -r requirements.txt
 `requirements.txt` incluye, entre otras:
 
 - `Flask`
-- `slack_bolt`
+- `slack_sdk`
+- `python-dotenv`
 - `google-genai`
 - `google-cloud-firestore`
 - `gspread`
